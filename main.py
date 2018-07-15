@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Developed By QinZhun on 12/6/2018
-#bbbbbbbbb
+#two conputers
 
 import sys, random
 from PyQt5.QtWidgets import QMainWindow, QFrame, QDesktopWidget
