@@ -1,0 +1,14 @@
+{
+    "python.unitTest.pyTestArgs": [],
+    "python.unitTest.unittestEnabled": false,
+    "python.unitTest.nosetestsEnabled": false,
+    "python.unitTest.pyTestEnabled": false,
+    "python.unitTest.unittestArgs": [
+        "-v",
+        "-s",
+        "./JAGA_data",
+        "-p",
+        "*test.py"
+    ],
+    "python.unitTest.promptToConfigure": false
+}

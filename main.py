@@ -1,13 +1,20 @@
 # -*- coding: utf-8 -*-
 # Developed By QinZhun on 12/6/2018
-#two conputers
+# pip install 插件名字 -i https://pypi.tuna.tsinghua.edu.cn/simple
+# http://pypi.douban.com/simple/
 
-import sys, random
-from PyQt5.QtWidgets import QMainWindow, QFrame, QDesktopWidget
-from PyQt5.QtWidgets import QApplication, QMessageBox
-from PyQt5.QtCore import Qt, QBasicTimer, pyqtSignal
-from PyQt5.QtGui import QPainter, QColor, QFont
+import random
+import sys
 import time
+import argparse
+
+from PyQt5.QtCore import QBasicTimer, Qt, pyqtSignal
+from PyQt5.QtGui import QColor, QFont, QPainter
+from PyQt5.QtWidgets import (QApplication, QDesktopWidget, QFrame, QMainWindow,
+                             QMessageBox)
+
+
+symbol = -1
 
 
 class mainWindow(QMainWindow):
@@ -21,7 +28,7 @@ class mainWindow(QMainWindow):
         self.tboard = Board(self)
         self.setCentralWidget(self.tboard)
         self.tboard.commandStart.connect(self.tboard.start)
-      #  self.tboard.start()
+        #  self.tboard.start()
 
         screen = QDesktopWidget().screenGeometry()
         self.resize(screen.width() - 10, screen.height() - 20)  # 全屏显示
@@ -69,7 +76,7 @@ class Board(QFrame):
         self.initBoard()
 
     def initBoard(self):
-        self.sign = -1  # 标志位-0代表空白；1和2代表左右红色矩形块出现；3代表只有白色十字架
+        self.sign = -1  # 标志位-1代表实验未开始；0代表空白；1和2代表左右红色矩形块出现；3代表只有白色十字架
         self.timeComulation = 0  # 计时器响应次数。如果调整时间间隔、调整计时器最小时间，程序中所有判断该值的地方，均需要调整
         self.finishedTrials = 0  # 已完成trials数量-1
         a = [1] * 10
@@ -90,7 +97,7 @@ class Board(QFrame):
     def timerEvent(self, event):
         if event.timerId() == self.timer.timerId():
             if self.finishedTrials == 0 and self.timeComulation == 0:
-                self.sign = 0 
+                self.sign = 0
             self.timeComulation += 1  # 计时器响应次数
 
             if self.timeComulation == 24:  # 时间=24*500ms，下面类似
@@ -98,7 +105,6 @@ class Board(QFrame):
                 if self.finishedTrials == 20:  # 单组实验结束，此处需添加文字提示
                     self.timer.stop()
                     self.sign = 5
-
 
             elif self.timeComulation == 4:
                 if self.trials[self.finishedTrials] == 1:  # 随机产生左右手运动
@@ -113,6 +119,9 @@ class Board(QFrame):
             elif self.timeComulation == 12:
                 self.sign = 0
 
+            global symbol
+            symbol = self.sign
+        #    print('sign: ' + str(self.sign))
             self.update()
 
         else:
@@ -141,13 +150,13 @@ class Board(QFrame):
         if self.sign == -1:
             painter = QPainter(self)
             painter.begin(self)
-            self.drawText(painter, 0.25, 0.5, 30, "实验马上开始，请做好准备--点击按键S开始实验")
-        #    self.drawText(painter, 0.29, 0.55, 30, "点击按键 S 开始实验")
+            self.drawText(painter, 0.25, 0.5, 30, "实验马上开始，请做好准备-点击按键S开始实验")
+            #    self.drawText(painter, 0.29, 0.55, 30, "点击按键 S 开始实验")
             painter.end()
-            
+
         elif self.sign == 0:
             return
-            
+
         elif self.sign == 1:
             painter = QPainter(self)
             painter.begin(self)
@@ -172,13 +181,12 @@ class Board(QFrame):
             self.drawCrossRoad(painter, Board.placeRatioCrossW,
                                Board.placeRatioCrossH, Board.sizeRatioCross)
             painter.end()
-        
+
         elif self.sign == 5:
             painter = QPainter(self)
             painter.begin(self)
             self.drawText(painter, 0.3, 0.5, 30, "本组实验结束，您辛苦啦")
             painter.end()
-
 
     # 绘制矩形块函数。参数x表示矩形块中心相对于窗口的位置，如0.25表示矩形块出现在窗口左侧25%的位置；y相对于窗口上侧；
     # w表示矩形块宽度相对于窗口宽度比值；h表示矩形块高度相对于窗口高度比值；
@@ -203,7 +211,7 @@ class Board(QFrame):
                          y * self.heightWindow - 0.5 * hei, wid, hei, color)
         painter.fillRect(x * self.widthWindow - 0.5 * hei,
                          y * self.heightWindow - 0.5 * wid, hei, wid, color)
-    
+
     # 绘制文字。可设置 文字相对位置、文字大小、文字内容
     def drawText(self, painter, x, y, size, textString):
         painter.setPen(QColor(0, 160, 230))
@@ -211,12 +219,57 @@ class Board(QFrame):
         font.setFamily("Microsoft YaHei")
         font.setPointSize(size)
         painter.setFont(font)
-        painter.drawText(x*self.widthWindow, y*self.heightWindow, textString)
-
-
+        painter.drawText(x * self.widthWindow, y * self.heightWindow,
+                         textString)
 
 
 if __name__ == '__main__':
     app = QApplication([])
     MW = mainWindow()
-    sys.exit(app.exec_())
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--starting_port',
+        type=int,
+        help='First port number to listen to for data.',
+        default=55000)
+    parser.add_argument(
+        '--num_devices',
+        type=int,
+        help='Number of devices to listen for.',
+        default=1)
+    parser.add_argument(
+        '--data_dir',
+        type=str,
+        help='Directory to write data files to.',
+        default='JAGA_data')
+    parser.add_argument(
+        '--file_name',
+        type=str,
+        help='Name of file to write data into.',
+        default='jaga')
+    parser.add_argument(
+        '--plot_memory',
+        type=int,
+        help=
+        'Number of packets to display. More packets results in smoother but slower plotting',
+        default=10)
+    parser.add_argument(
+        '--color_map',
+        type=str,
+        help=
+        'Color map for drawing the data. See matplotlib documentation for details',
+        default='Set2')
+    args = parser.parse_args()  # parse the optionals
+    md = jagaOffline.JagaMultiDisplay(
+        args.data_dir, args.file_name, args.num_devices, args.starting_port,
+        args.plot_memory,
+        args.color_map)  # create an instance of the main runtime class
+
+    try:
+        run_flag = True
+        md.start()  # start the runtime
+        sys.exit(app.exec_())
+    except KeyboardInterrupt:
+        print("Received interrupt, exiting.")
+        run_flag = False
