@@ -2,6 +2,8 @@ import trainParams
 import onlineClass
 import offlineParamOptimization
 # test test
+# For debug
+# for gg
 
 channel = [1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
 # frequency = [8, 30]
