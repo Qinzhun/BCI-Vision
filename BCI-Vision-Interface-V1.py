@@ -40,7 +40,8 @@ OnlineGroups = 0
 TestTrialsNum = 20
 nameSubject = ""
 channel = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
-
+allGroups = 0
+onlineStarted = 0
 
 class mainWindow(QMainWindow):
     def __init__(self):
@@ -99,7 +100,7 @@ class mainWindow(QMainWindow):
         self.trainTrialsNum.setText("trainTrials:")
         self.trainTrialsNum.setFont(QFont("Roman times", 10, QFont.Bold))
         self.trainTrialsNumChoose = QComboBox(self)
-        self.trainTrialsNumChoose.addItems(["10", "15", "20"])
+        self.trainTrialsNumChoose.addItems(["0", "5", "10", "15", "20"])
         self.trainTrialsNum.move(5, 140)
         self.trainTrialsNumChoose.move(120, 140)
 
@@ -131,14 +132,21 @@ class mainWindow(QMainWindow):
         TrainTestRuns[1] = testGroups
         global groups
         groups = trainTrialsNum
+        global allGroups
+        allGroups = 0
         self.experRemind = experiment()
         print(testGroups)
         print(trainTrialsNum)
 
     def online(self):
+        global allGroups
+        allGroups = 1
         global nameSubject
         nameSubject = self.nameEdit.text()
+        global onlineStarted
+        onlineStarted = 1
         print(nameSubject)
+        self.experRemindOnline = experiment()
 
     # Channel manager Dialog
     def openChannelManagerDialog(self):
@@ -241,19 +249,19 @@ class Board(QFrame):
         self.setFocusPolicy(Qt.StrongFocus)
         #   self.trainGroupsFinished = 0
         #   self.testGroupsFinished = 0
-        self.Groups = 0
+        # self.Groups = 0
 
     # 点击按钮，程序开始运行
     def start(self):
         global OnlineGroups
-        if self.Groups == 0:
+        global allGroups
+        if allGroups == 0:
             self.isStarted = True
             self.timer.start(Board.speed, self)
-            self.Groups += 1
-        elif self.Groups != TrainTestRuns[1] + 1:
+        elif allGroups != TrainTestRuns[1] + 1:
             self.isStarted = True
-            OnlineGroups = self.Groups - 1
-            self.Groups += 1
+            OnlineGroups = allGroups - 1
+            allGroups += 1
             self.timerTest.start(Board.speed, self)
 
     # 训练参数
@@ -495,7 +503,7 @@ class CaptureThread(threading.Thread):
         formsymbol = -1
         currentsymbol = -1
         trigger = 0
-        testGroupsStarted = False
+        testGroupsStarted = 0
         testGroupsStartedTimes = 0
         offline = offlineParamOptimization.offlineParamOpt(channel, timeNum, groups)
         print("离线初始化完成")
@@ -505,7 +513,7 @@ class CaptureThread(threading.Thread):
         while run_flag:
             if symbol == 5 and testGroupsStartedTimes == 0:
                 self.outtfile.close()
-                testGroupsStarted = True
+                testGroupsStarted = 1
                 testGroupsStartedTimes = 1
                 global freindex
                 meanacc, freindex = offline.offlineClass(filename)
@@ -518,10 +526,14 @@ class CaptureThread(threading.Thread):
                 # 训练参数
                 #   if symbol == 8 and classifyThreadstarted == 0:
                 #  classifyThreadstarted = 1
+            if onlineStarted == 1:
+                global onlineStarted
+                onlineStarted = 0
+                testGroupsStarted = 2
                 self.classify_thread = ClassifyThread()
                 self.classify_thread.start()
 
-            if testGroupsStarted is False:
+            if testGroupsStarted == 0:
                 #    start=time.time()
                 currentsymbol = symbol
                 if formsymbol != currentsymbol and currentsymbol == 1:
@@ -540,7 +552,10 @@ class CaptureThread(threading.Thread):
                 self.outtfile.write(struct.pack("<h", trigger) + data)
                 # print("数据写入完成")
 
-            else:
+            elif testGroupsStarted == 1:
+                data, address = self.sock.recvfrom(self.length)
+
+            elif testGroupsStarted == 2:
                 data, address = self.sock.recvfrom(self.length)
                 Data_queue.put(data)
 
