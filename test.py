@@ -8,11 +8,11 @@ import offlineParamOptimization
 channel = [1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
 # frequency = [8, 30]
 num = 95
-groups = 15
+groups = 5
 
 offline = offlineParamOptimization.offlineParamOpt(channel, num, groups)
 
-meanacc = offline.offlineClass('./JAGA_data/2018-06-29_21-09-40_0_jaga_xuyao.dat')
+meanacc = offline.offlineClass('./JAGA_data/2018-08-02_18-32-36_0_jaga.dat')
 meanaccList = meanacc.tolist()
 frequencyIndex = meanaccList.index(max(meanaccList))
 print(frequencyIndex)

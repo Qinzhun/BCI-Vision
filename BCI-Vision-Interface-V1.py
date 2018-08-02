@@ -42,6 +42,8 @@ nameSubject = ""
 channel = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
 allGroups = 0
 onlineStarted = 0
+offlineStarted = 0
+
 
 class mainWindow(QMainWindow):
     def __init__(self):
@@ -100,7 +102,7 @@ class mainWindow(QMainWindow):
         self.trainTrialsNum.setText("trainTrials:")
         self.trainTrialsNum.setFont(QFont("Roman times", 10, QFont.Bold))
         self.trainTrialsNumChoose = QComboBox(self)
-        self.trainTrialsNumChoose.addItems(["0", "5", "10", "15", "20"])
+        self.trainTrialsNumChoose.addItems(["5", "10", "15", "20"])
         self.trainTrialsNum.move(5, 140)
         self.trainTrialsNumChoose.move(120, 140)
 
@@ -132,11 +134,14 @@ class mainWindow(QMainWindow):
         TrainTestRuns[1] = testGroups
         global groups
         groups = trainTrialsNum
+        print(groups)
         global allGroups
         allGroups = 0
+        global offlineStarted
+        offlineStarted = 1
         self.experRemind = experiment()
-        print(testGroups)
-        print(trainTrialsNum)
+     #   print(testGroups)
+     #   print(trainTrialsNum)
 
     def online(self):
         global allGroups
@@ -456,8 +461,9 @@ class Board(QFrame):
 
 # class used inside "JagaMultiDisplay" for threading data stream
 class CaptureThread(threading.Thread):
-    def __init__(self, bind_port, length, label, data_dir, file_name, queue_length):
-        
+    def __init__(self, bind_port, length, label, data_dir, file_name,
+                 queue_length):
+
         threading.Thread.__init__(self)
 
         self.bind_port = bind_port
@@ -505,12 +511,20 @@ class CaptureThread(threading.Thread):
         trigger = 0
         testGroupsStarted = 0
         testGroupsStartedTimes = 0
-        offline = offlineParamOptimization.offlineParamOpt(channel, timeNum, groups)
-        print("离线初始化完成")
+        global offlineStarted
+        global onlineStarted
 
         #  classifyThreadstarted = 0
 
         while run_flag:
+
+            if offlineStarted == 1:
+                print(groups)
+                offline = offlineParamOptimization.offlineParamOpt(
+                    channel, timeNum, groups)
+                print("离线初始化完成")
+                offlineStarted = 0
+
             if symbol == 5 and testGroupsStartedTimes == 0:
                 self.outtfile.close()
                 testGroupsStarted = 1
@@ -520,14 +534,16 @@ class CaptureThread(threading.Thread):
                 print("meanacc=", meanacc)
                 print("freindex=", freindex)
                 print("离线识别率计算")
-                train = trainParams.trainParams(channel, timePoint, frequency[freindex], timeNum, groups)
+                train = trainParams.trainParams(
+                    channel, timePoint, frequency[freindex], timeNum, groups)
                 train.paramsTrain(filename)
                 print("Finish training params")
                 # 训练参数
                 #   if symbol == 8 and classifyThreadstarted == 0:
                 #  classifyThreadstarted = 1
+
             if onlineStarted == 1:
-                global onlineStarted
+                print("onlineStartttt")
                 onlineStarted = 0
                 testGroupsStarted = 2
                 self.classify_thread = ClassifyThread()
