@@ -158,7 +158,7 @@ class mainWindow(QMainWindow):
         TrainTestRuns[1] = testGroups
         global groups
         groups = trainTrialsNum
-        #print(groups)
+        # print(groups)
         global allGroups
         allGroups = 0
         global offlineStarted
@@ -308,7 +308,6 @@ class Board(QFrame):
                                         frequency[freindex], timeNum, groups)
         train.paramsTrain(filename)
         print("Finish training params")
-
     #    symbol = 8   # 代表训练参数完成
 
     # 定时器事件

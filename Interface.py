@@ -18,30 +18,26 @@ class mainWindow(QMainWindow):
         self.initUI()
 
     def initUI(self):
-        screen = QDesktopWidget().screenGeometry()
-        self.resize(screen.width() - 10, screen.height() - 20)  # 全屏显示
-        self.center()
-        self.setWindowTitle('BCIVision')
 
         menubar = self.menuBar()
 
-        fileMenu = menubar.addMenu('&File')
-        toolsMenu = menubar.addMenu('&Tools')
+        self.fileMenu = menubar.addMenu('&File')
+        self.toolsMenu = menubar.addMenu('&Tools')
 
         Channel = QAction("Channel", self)
-        toolsMenu.addAction(Channel)
+        self.toolsMenu.addAction(Channel)
         Channel.triggered.connect(self.openChannelManagerDialog)
 
         self.labelChannel = QLabel(self)
         self.labelChannel.setText("Channels:")
-        self.labelChannel.move(5, 25)
-        self.labelChannel.setFont(QFont("Roman times", 10, QFont.Bold))
+        # self.labelChannel.move(5, 25)
+        # self.labelChannel.setFont(QFont("Roman times", 10, QFont.Bold))
         channelsStr = [str(i) for i in channels]
         channelsText = " ".join(channelsStr)
         self.labelChannelDisplay = QLabel(self)
         self.labelChannelDisplay.setText(channelsText)
-        self.labelChannelDisplay.move(90, 35)
-        self.labelChannelDisplay.adjustSize()
+        # self.labelChannelDisplay.move(90, 35)
+        # self.labelChannelDisplay.adjustSize()
         self.labelChannelDisplay.setFont(QFont("Roman times"))
 
         #   hlayoutchannel = QHBoxLayout()
@@ -51,26 +47,26 @@ class mainWindow(QMainWindow):
 
         self.labelSubjectName = QLabel(self)
         self.labelSubjectName.setText("Subject:")
-        self.labelSubjectName.setFont(QFont("Roman times", 10, QFont.Bold))
+        #self.labelSubjectName.setFont(QFont("Roman times", 10, QFont.Bold))
         self.nameEdit = QLineEdit(self)
-        self.labelSubjectName.move(5, 60)
-        self.nameEdit.move(120, 60)
+        #self.labelSubjectName.move(5, 60)
+        #self.nameEdit.move(120, 60)
 
         self.testGroups = QLabel(self)
         self.testGroups.setText("testGroups:")
-        self.testGroups.setFont(QFont("Roman times", 10, QFont.Bold))
+        #self.testGroups.setFont(QFont("Roman times", 10, QFont.Bold))
         self.testGroupsChoose = QComboBox(self)
         self.testGroupsChoose.addItems(["2", "3", "4"])
-        self.testGroups.move(5, 100)
-        self.testGroupsChoose.move(120, 100)
+        #self.testGroups.move(5, 100)
+        #self.testGroupsChoose.move(120, 100)
 
         self.trainTrialsNum = QLabel(self)
         self.trainTrialsNum.setText("trainTrials:")
-        self.trainTrialsNum.setFont(QFont("Roman times", 10, QFont.Bold))
+        #self.trainTrialsNum.setFont(QFont("Roman times", 10, QFont.Bold))
         self.trainTrialsNumChoose = QComboBox(self)
-        self.trainTrialsNumChoose.addItems(["10", "15", "20"])
-        self.trainTrialsNum.move(5, 140)
-        self.trainTrialsNumChoose.move(120, 140)
+        self.trainTrialsNumChoose.addItems(["5", "10", "15", "20"])
+        #self.trainTrialsNum.move(5, 140)
+        #self.trainTrialsNumChoose.move(120, 140)
 
         self.buttonOffline = QPushButton("Training", self)
         self.buttonOffline.setCheckable(True)
@@ -78,14 +74,37 @@ class mainWindow(QMainWindow):
         self.buttonOnline = QPushButton("Online", self)
         self.buttonOnline.setCheckable(True)
         self.buttonOnline.clicked.connect(self.online)
-        self.buttonOffline.move(5, 190)
-        self.buttonOnline.move(120, 190)
-        #####################################################
+        #self.buttonOffline.move(5, 190)
+        #self.buttonOnline.move(120, 190)
+
         self.signalGraphic = pg.PlotWidget(self)
-        self.signalGraphic.resize(1000, 500)
-        self.signalGraphic.move(400, 60)
-        self.signalGraphic.setXRange(0, 500)
-        self.signalGraphic.setYRange(0, 60)
+        #self.signalGraphic.resize(1200, 800)
+        #self.signalGraphic.move(400, 60)
+        self.signalGraphic.setXRange(0, 5200)
+        self.signalGraphic.setYRange(0, 16*10)
+
+        grid = QGridLayout()
+        # grid.setSpacing(10)
+
+        grid.addWidget(self.labelChannel, 1, 0)
+        grid.addWidget(self.labelChannelDisplay, 1, 1)
+        grid.addWidget(self.labelSubjectName, 2, 0)
+        grid.addWidget(self.nameEdit, 2, 1)
+        grid.addWidget(self.testGroups, 3, 0)
+        grid.addWidget(self.testGroupsChoose, 3, 1)
+        grid.addWidget(self.trainTrialsNum, 4, 0)
+        grid.addWidget(self.trainTrialsNumChoose, 4, 1)
+        grid.addWidget(self.buttonOffline, 5, 0)
+        grid.addWidget(self.buttonOnline, 5, 1)
+        grid.addWidget(self.signalGraphic, 1, 2, 10, 10)
+        self.setLayout(grid)
+
+        screen = QDesktopWidget().screenGeometry()
+        self.resize(screen.width() - 10, screen.height() - 20)  # 全屏显示
+        self.center()
+        self.setWindowTitle('BCIVision')
+
+        #####################################################
         self.nPlots = 10
         self.nSamples = 500
         self.curve = []
