@@ -12,6 +12,8 @@ import queue
 import socket
 import struct
 import threading
+import pyqtgraph as pg
+import numpy
 import onlineClass
 import trainParams
 import offlineParamOptimization
@@ -19,7 +21,7 @@ from PyQt5.QtWidgets import QMainWindow, QFrame, QDesktopWidget, QApplication, Q
 from PyQt5.QtWidgets import QAction, QDialog, QGridLayout, QLabel, QVBoxLayout, QHBoxLayout
 from PyQt5.QtWidgets import QWidget, QDialogButtonBox, QCheckBox, QPushButton, QRadioButton
 from PyQt5.QtWidgets import QLineEdit, QComboBox
-from PyQt5.QtCore import Qt, QBasicTimer, pyqtSignal
+from PyQt5.QtCore import Qt, QBasicTimer, pyqtSignal, QTimer
 from PyQt5.QtGui import QPainter, QColor, QFont
 
 # if platform.system() == 'Darwin':  # OSX
@@ -115,6 +117,23 @@ class mainWindow(QMainWindow):
         self.buttonOffline.move(5, 190)
         self.buttonOnline.move(120, 190)
 
+        self.signalGraphic = pg.PlotWidget(self)
+        self.signalGraphic.resize(1000, 500)
+        self.signalGraphic.move(400, 60)
+        self.signalGraphic.setXRange(0, 500)
+        self.signalGraphic.setYRange(0, 60)
+        self.nPlots = 10
+        self.nSamples = 500
+        self.curve = []
+        for i in range(self.nPlots):
+            c = pg.PlotCurveItem(pen=(i, self.nPlots * 1.3))
+            self.signalGraphic.addItem(c)
+            c.setPos(0, i * 6)
+            self.curve.append(c)
+        self.data = numpy.random.normal(size=(self.nPlots, self.nSamples))
+        self.ptr = 0
+        self.count = 0
+
         #grid = QGridLayout()
         #grid.setSpacing(100)
         #grid.addWidget(self.labelChannel, 1, 0)
@@ -140,6 +159,9 @@ class mainWindow(QMainWindow):
         global offlineStarted
         offlineStarted = 1
         self.experRemind = experiment()
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update)
+        self.timer.start(100)
      #   print(testGroups)
      #   print(trainTrialsNum)
 
@@ -152,6 +174,15 @@ class mainWindow(QMainWindow):
         onlineStarted = 1
         print(nameSubject)
         self.experRemindOnline = experiment()
+    
+    def update(self):
+       # print("update")
+        self.count += 1
+        self.data[:, :-1] = self.data[:, 1:]
+        self.data[:, -1] = numpy.random.normal(size=(self.nPlots))
+
+        for i in range(self.nPlots):
+            self.curve[i].setData(self.data[i])
 
     # Channel manager Dialog
     def openChannelManagerDialog(self):
